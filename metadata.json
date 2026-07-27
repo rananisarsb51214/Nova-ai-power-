@@ -1,0 +1,6 @@
+{
+  "name": "Nova AI Power",
+  "description": "An autonomous AI business ecosystem and toolbox for building, creating, and automating intelligent applications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
