@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { TabType } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
+import { GlobalSearchModal } from './components/GlobalSearchModal';
 import { AuthModal } from './components/AuthModal';
 import { MultiModelHub } from './components/MultiModelHub';
 import { DevStudio } from './components/DevStudio';
@@ -14,6 +15,8 @@ import { SocialSuite } from './components/SocialSuite';
 import { EnterpriseSettings } from './components/EnterpriseSettings';
 import { AiCommercialStudio } from './components/AiCommercialStudio';
 import { SkillsLibrary } from './components/SkillsLibrary';
+import { DatabaseMemoryVault } from './components/DatabaseMemoryVault';
+import { RepoInspector } from './components/RepoInspector';
 import { LandingView } from './components/LandingView';
 import { PricingView } from './components/PricingView';
 import { DocsView } from './components/DocsView';
@@ -25,6 +28,18 @@ import { signOut } from 'firebase/auth';
 export default function App() {
   const { user, loading, auth } = useAuth();
   const [currentTab, setCurrentTab] = useState<TabType>('hub');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   if (loading) {
     return (
@@ -55,12 +70,18 @@ export default function App() {
       />
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        <Header currentTab={currentTab} onSelectTab={setCurrentTab} />
+        <Header 
+          currentTab={currentTab} 
+          onSelectTab={setCurrentTab} 
+          onOpenSearch={() => setIsSearchOpen(true)}
+        />
         {currentTab === 'hub' && <MultiModelHub />}
         {currentTab === 'dev' && <DevStudio />}
         {currentTab === 'agents' && <AgentPlatform />}
         {currentTab === 'commercial' && <AiCommercialStudio />}
         {currentTab === 'skills' && <SkillsLibrary />}
+        {currentTab === 'memory' && <DatabaseMemoryVault />}
+        {currentTab === 'repo_inspector' && <RepoInspector />}
         {currentTab === 'landing' && <LandingView onSelectTab={setCurrentTab} />}
         {currentTab === 'pricing' && <PricingView onSelectTab={setCurrentTab} />}
         {currentTab === 'docs' && <DocsView />}
@@ -73,6 +94,12 @@ export default function App() {
         {currentTab === 'social' && <SocialSuite />}
         {currentTab === 'enterprise' && <EnterpriseSettings />}
       </main>
+
+      <GlobalSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelectTab={setCurrentTab}
+      />
     </div>
   );
 }

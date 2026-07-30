@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Sparkles, Code, Terminal, BookOpen, Copy, Check, Star, Filter, ArrowRight, Shield, Layers, Cpu, Database as DbIcon, Cloud, Lock } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
 export interface SkillItem {
   id: string;
@@ -63,6 +66,7 @@ const GENERATED_SKILLS: SkillItem[] = Array.from({ length: 100 }, (_, i) => {
 
 export function SkillsLibrary() {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
@@ -72,14 +76,57 @@ export function SkillsLibrary() {
   const [page, setPage] = useState(1);
   const itemsPerPage = 12;
 
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
+  // Sync favorites with Firestore in real-time if user is logged in
+  useEffect(() => {
+    if (!user) {
+      // Load from local storage as fallback
+      const localFavs = localStorage.getItem('nova_skill_favorites');
+      if (localFavs) {
+        try { setFavorites(JSON.parse(localFavs)); } catch (e) {}
+      }
+      return;
+    }
+
+    const favDocRef = doc(db, 'user_favorites', user.uid);
+    const unsubscribe = onSnapshot(favDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data && Array.isArray(data.skillIds)) {
+          setFavorites(data.skillIds);
+        }
+      } else {
+        // Initialize empty document
+        setDoc(favDocRef, { skillIds: [], updatedAt: Date.now() }, { merge: true });
+      }
+    }, (error) => {
+      console.error('Error syncing favorites from Firestore:', error);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  const toggleFavorite = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    let updatedFavorites: string[];
     if (favorites.includes(id)) {
-      setFavorites(favorites.filter(f => f !== id));
+      updatedFavorites = favorites.filter(f => f !== id);
       showToast('Removed from favorites', 'info');
     } else {
-      setFavorites([...favorites, id]);
-      showToast('Added to favorites!', 'success');
+      updatedFavorites = [...favorites, id];
+      showToast('Added to favorites & synced with Firestore!', 'success');
+    }
+
+    setFavorites(updatedFavorites);
+
+    if (user) {
+      try {
+        const favDocRef = doc(db, 'user_favorites', user.uid);
+        await setDoc(favDocRef, { skillIds: updatedFavorites, updatedAt: Date.now() }, { merge: true });
+      } catch (err) {
+        console.error('Failed to sync favorite to Firestore:', err);
+      }
+    } else {
+      localStorage.setItem('nova_skill_favorites', JSON.stringify(updatedFavorites));
     }
   };
 

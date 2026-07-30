@@ -12,7 +12,9 @@ import {
   Sparkles,
   LogOut,
   User as UserIcon,
-  Film
+  Film,
+  HardDrive,
+  Code2
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 
@@ -28,8 +30,10 @@ export function Sidebar({ currentTab, onSelectTab, user, onSignOut }: SidebarPro
     { id: 'hub', label: 'Multi-Model AI Hub', icon: Bot, badge: '10 Models' },
     { id: 'dev', label: 'AI Development Studio', icon: Code, badge: 'Full-Stack' },
     { id: 'agents', label: 'AI Agent Platform', icon: Cpu, badge: 'Autonomous' },
+    { id: 'repo_inspector', label: 'Python GenAI Inspector', icon: Code2, badge: 'Python AI' },
     { id: 'commercial', label: 'AI Commercial Studio', icon: Film, badge: '30s Ad' },
     { id: 'skills', label: '100 Coding Skills', icon: Sparkles, badge: '100 Skills' },
+    { id: 'memory', label: 'Database Memory Vault', icon: HardDrive, badge: 'Firestore' },
     { id: 'creative', label: 'AI Creative Studio', icon: Palette, badge: 'Media' },
     { id: 'business', label: 'Business & Productivity', icon: Briefcase, badge: 'ERP/CRM' },
     { id: 'automation', label: 'Automation & Workflows', icon: Workflow, badge: 'Builder' },

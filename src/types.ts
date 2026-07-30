@@ -3,18 +3,20 @@ export type TabType =
   | 'dev' 
   | 'agents' 
   | 'commercial' 
-  | 'creative' 
-  | 'business' 
-  | 'automation' 
-  | 'social' 
-  | 'enterprise'
   | 'skills'
+  | 'memory'
+  | 'repo_inspector'
   | 'landing'
   | 'pricing'
   | 'docs'
   | 'blog'
   | 'contact'
-  | 'admin';
+  | 'admin'
+  | 'creative'
+  | 'business'
+  | 'automation'
+  | 'social'
+  | 'enterprise';
 
 export interface ChatMessage {
   id: string;
