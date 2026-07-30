@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Database, Plus, Trash2, Search, Sparkles, CheckCircle2, Shield, HardDrive, RefreshCw, Download, Upload, Copy, Check, FileJson } from 'lucide-react';
+import { Database, Plus, Trash2, Search, Sparkles, CheckCircle2, Shield, HardDrive, RefreshCw, Download, Upload, Copy, Check, FileJson, X, Filter } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,7 @@ export function DatabaseMemoryVault() {
   const [category, setCategory] = useState('Codebase State');
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -171,11 +172,20 @@ export function DatabaseMemoryVault() {
     if (e.target) e.target.value = '';
   };
 
-  const filteredMemories = memories.filter(m => 
-    m.title.toLowerCase().includes(search.toLowerCase()) || 
-    m.content.toLowerCase().includes(search.toLowerCase()) ||
-    m.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMemories = memories.filter(m => {
+    const matchesCategory = selectedCategoryFilter === 'All' || m.category === selectedCategoryFilter;
+    const q = search.trim().toLowerCase();
+    if (!q) return matchesCategory;
+
+    const matchesTitle = m.title.toLowerCase().includes(q);
+    const matchesContent = m.content.toLowerCase().includes(q);
+    const matchesCategoryName = m.category.toLowerCase().includes(q);
+    const matchesId = m.id ? m.id.toLowerCase().includes(q) : false;
+
+    return matchesCategory && (matchesTitle || matchesContent || matchesCategoryName || matchesId);
+  });
+
+  const availableCategories = ['All', 'Codebase State', 'Prompt History', 'Agent Context', 'Environment Config', 'Repo Inspector', 'Imported Memory'];
 
   return (
     <div className="flex-1 flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
@@ -216,15 +226,25 @@ export function DatabaseMemoryVault() {
             <span>Export JSON ({memories.length})</span>
           </button>
 
-          <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
+          {/* Real-time Search Bar with Clear Button */}
+          <div className="relative flex-1 md:w-72">
+            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-indigo-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search database memory..."
-              className="w-full pl-10 pr-4 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Search by snippet name, content, or category..."
+              className="w-full pl-10 pr-9 py-2 text-xs bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
             />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-2.5 p-0.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-colors"
+                title="Clear search filter"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -260,6 +280,7 @@ export function DatabaseMemoryVault() {
                 <option value="Prompt History">Prompt History</option>
                 <option value="Agent Context">Agent Context</option>
                 <option value="Environment Config">Environment Config</option>
+                <option value="Repo Inspector">Repo Inspector</option>
               </select>
             </div>
 
@@ -292,11 +313,40 @@ export function DatabaseMemoryVault() {
           </div>
         </div>
 
-        {/* Memories List */}
+        {/* Memories List with Filter Bar */}
         <div className="flex-1 bg-slate-900/40 border border-slate-800 rounded-3xl p-6 overflow-y-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">Stored Database Memories ({filteredMemories.length})</h3>
-            <span className="text-xs font-mono text-slate-400">Real-time sync enabled</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-slate-800/80">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <span>Stored Database Memories</span>
+                <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800/80 rounded-full">
+                  {filteredMemories.length} / {memories.length}
+                </span>
+              </h3>
+              {search && (
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Filtering for <span className="text-indigo-300 font-semibold">"{search}"</span>
+                </p>
+              )}
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex items-center space-x-1.5 overflow-x-auto text-[11px] w-full sm:w-auto no-scrollbar">
+              <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0 mr-1" />
+              {availableCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategoryFilter(cat)}
+                  className={`px-2.5 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
+                    selectedCategoryFilter === cat
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
 
           {filteredMemories.length > 0 ? (
@@ -349,10 +399,32 @@ export function DatabaseMemoryVault() {
               ))}
             </div>
           ) : (
-            <div className="h-64 flex flex-col items-center justify-center text-slate-500 space-y-2">
-              <HardDrive className="w-8 h-8 text-slate-600" />
-              <p className="text-xs">No database memory items stored yet.</p>
-              <p className="text-[11px] text-slate-600">Use the form on the left to add your first persistent memory.</p>
+            <div className="h-64 flex flex-col items-center justify-center text-slate-500 space-y-3">
+              <Search className="w-8 h-8 text-slate-600" />
+              <div className="text-center space-y-1">
+                <p className="text-xs font-semibold text-slate-300">
+                  {search || selectedCategoryFilter !== 'All' 
+                    ? `No memories matched your search filters.` 
+                    : `No database memory items stored yet.`}
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {search || selectedCategoryFilter !== 'All'
+                    ? `Try adjusting your search terms or clearing category filters.`
+                    : `Use the form on the left to add your first persistent memory.`}
+                </p>
+              </div>
+
+              {(search || selectedCategoryFilter !== 'All') && (
+                <button
+                  onClick={() => {
+                    setSearch('');
+                    setSelectedCategoryFilter('All');
+                  }}
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 rounded-xl text-xs font-semibold transition-all"
+                >
+                  Clear Search & Filters
+                </button>
+              )}
             </div>
           )}
         </div>
