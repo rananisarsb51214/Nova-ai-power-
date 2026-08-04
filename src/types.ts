@@ -1,6 +1,9 @@
 export type TabType = 
   | 'hub' 
   | 'dev' 
+  | 'vibe_responding'
+  | 'vibe_coding'
+  | 'nova_video_demo'
   | 'agents' 
   | 'commercial' 
   | 'skills'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Bot, HardDrive, BookOpen, Sparkles, Cpu, Code, Code2, ArrowRight, CornerDownLeft, Command, Shield, Database, Workflow, Briefcase, Film, Palette, Check } from 'lucide-react';
+import { Search, X, Bot, HardDrive, BookOpen, Sparkles, Cpu, Code, Code2, ArrowRight, CornerDownLeft, Command, Shield, Database, Workflow, Briefcase, Film, Palette, Check, Flame, Zap } from 'lucide-react';
 import { TabType } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
@@ -52,15 +52,33 @@ const STATIC_AGENTS: SearchResultItem[] = [
   },
   {
     id: 'agent-4',
-    title: 'Performance Marketing Agent',
-    subtitle: 'Ad copy generation, viral reel scripts & conversion funnel optimizer',
+    title: 'Vibe Responding Agent',
+    subtitle: 'Comment-to-sale closing, objection busters & multi-channel social vibe response',
     category: 'Agents',
-    tab: 'agents',
-    icon: Sparkles,
-    tags: ['Ads', 'Viral', 'E-commerce']
+    tab: 'vibe_responding',
+    icon: Flame,
+    tags: ['Vibe', 'Responding', 'Sales', 'TikTok', 'Instagram', 'DM']
   },
   {
     id: 'agent-5',
+    title: 'Vibe Coding Agent',
+    subtitle: 'Flow-state AI coding, Super God ECom Money Machine & instant React/Express code generator',
+    category: 'Agents',
+    tab: 'vibe_coding',
+    icon: Zap,
+    tags: ['Vibe', 'Coding', 'Super God', 'React', 'TypeScript', 'Express']
+  },
+  {
+    id: 'agent-nova-video',
+    title: 'Nova AI Demo Video & Live Templates',
+    subtitle: 'Generate high-converting TikTok Reels, Meta video ads & Shopify product commercials with live template library',
+    category: 'Tools',
+    tab: 'nova_video_demo',
+    icon: Film,
+    tags: ['Nova', 'Video', 'Reels', 'TikTok', 'Templates', 'Meta Ads', 'Shopify']
+  },
+  {
+    id: 'agent-6',
     title: 'Automated QA & Testing Agent',
     subtitle: 'End-to-end integration test runner & bug regression detector',
     category: 'Agents',
@@ -69,7 +87,7 @@ const STATIC_AGENTS: SearchResultItem[] = [
     tags: ['QA', 'Testing', 'CI/CD']
   },
   {
-    id: 'agent-6',
+    id: 'agent-7',
     title: 'Data Analysis & BI Agent',
     subtitle: 'SQL query writer, revenue forecasting & anomaly detection',
     category: 'Agents',
@@ -303,14 +321,14 @@ export function GlobalSearchModal({ isOpen, onClose, onSelectTab }: GlobalSearch
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 md:pt-24 px-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 md:pt-24 px-4 bg-slate-950/80 backdrop-blur-xl animate-in fade-in duration-200">
       {/* Click outside backdrop to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[80vh] border-indigo-500/20">
+      <div className="relative w-full max-w-2xl bg-slate-900/95 border border-white/15 rounded-[24px] shadow-2xl overflow-hidden z-10 flex flex-col max-h-[82vh] backdrop-blur-2xl">
         
         {/* Top Input Bar */}
-        <div className="p-4 border-b border-slate-800 flex items-center space-x-3 bg-slate-900/90">
+        <div className="p-4 border-b border-white/10 flex items-center space-x-3 bg-slate-950/60">
           <Search className="w-5 h-5 text-indigo-400 shrink-0" />
           <input
             ref={inputRef}
@@ -323,26 +341,26 @@ export function GlobalSearchModal({ isOpen, onClose, onSelectTab }: GlobalSearch
           {queryStr && (
             <button
               onClick={() => setQueryStr('')}
-              className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <span className="hidden sm:inline-block px-2 py-1 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded-md">
+          <span className="hidden sm:inline-block px-2 py-1 text-[10px] font-mono text-slate-400 bg-slate-800 border border-white/10 rounded-lg">
             ESC
           </span>
         </div>
 
         {/* Category Filters */}
-        <div className="px-4 py-2 bg-slate-950/60 border-b border-slate-800 flex items-center space-x-2 overflow-x-auto text-xs shrink-0 no-scrollbar">
+        <div className="px-4 py-2.5 bg-slate-950/40 border-b border-white/10 flex items-center space-x-2 overflow-x-auto text-xs shrink-0 no-scrollbar">
           {(['All', 'Agents', 'Memory Snippets', 'Documentation', 'Tools'] as const).map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1 rounded-xl font-medium transition-all whitespace-nowrap flex items-center space-x-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl font-medium transition-all whitespace-nowrap flex items-center space-x-1.5 ${
                 activeCategory === cat
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30 border border-white/20'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
               }`}
             >
               {cat === 'Agents' && <Bot className="w-3.5 h-3.5" />}
